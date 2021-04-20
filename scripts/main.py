@@ -1,4 +1,5 @@
 import smtplib
+from data.keyboards.scr import menu_kb
 import vk_api
 from vk_api.longpoll import VkEventType, VkLongPoll
 from bs4 import BeautifulSoup
@@ -14,4 +15,4 @@ while True:
         if event.type == VkEventType.MESSAGE_NEW:
             msg = event.text.lower()
             if event.from_user and not event.from_me:
-                vk_session.method("messages.send", {"user_id": event.user_id, "message": event.text, "random_id": 0})
+                vk_session.method('messages.send', {'user_id': event.user_id, 'message': 'Функции бота: ', 'keyboard': menu_kb(), 'random_id': 0})
