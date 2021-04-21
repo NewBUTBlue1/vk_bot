@@ -24,7 +24,7 @@ while True:
                     msg = event.text
                     if event.from_user and not event.from_me:
                         if event.user_id not in list(users.keys()):
-                            users[event.user_id] = {'act': 'menu'}
+                            users[event.user_id] = {'act': 'menu', 'ct': '', 'ct_used': []}
                             vk_session.method('messages.send', {'user_id': event.user_id, 'message': 'Функции бота: ',
                                                                 'keyboard': menu_kb(), 'random_id': 0})
                         else:
@@ -78,7 +78,8 @@ while True:
                                                 ll1 = str(msg).split()[0]
                                                 ll2 = str(msg).split()[1]
                                                 with open("img.png", "wb") as file:
-                                                    resp = requests.get(f"https://static-maps.yandex.ru/1.x/?ll={ll1},{ll2}&spn=0.016457,0.00619&l=map")
+                                                    resp = requests.get(
+                                                        f"https://static-maps.yandex.ru/1.x/?ll={ll1},{ll2}&spn=0.016457,0.00619&l=map")
                                                     file.write(resp.content)
                                             except ValueError:
                                                 users[event.user_id]["act"] = "maps"
@@ -99,8 +100,9 @@ while True:
                                             x = wikipedia.page(msg)
                                             y = x.url
                                             vk_session.method('messages.send',
-                                                            {'user_id': event.user_id, 'message': f'{x.content[:300]}...',
-                                                             'keyboard': wiki_msg(y), 'random_id': 0})
+                                                              {'user_id': event.user_id,
+                                                               'message': f'{x.content[:300]}...',
+                                                               'keyboard': wiki_msg(y), 'random_id': 0})
                                         except wikipedia.exceptions.DisambiguationError as e:
                                             y = f'https://ru.wikipedia.org/wiki/{"_".join(msg.split())}'
                                             vk_session.method('messages.send',
@@ -114,36 +116,56 @@ while True:
                                                       {'user_id': event.user_id, 'message': 'Функции бота: ',
                                                        'keyboard': menu_kb(), 'random_id': 0})
                                 elif msg.lower() == "города":
-                                    if msg.lower() == 'прервать игру':
-                                        users[event.user_id]["act"] = "games"
-                                        isBreak = True
+                                    users[event.user_id]["act"] = "goroda"
+                                    users[event.user_id]["ct"] = choice(data)
+                                    vk_session.method('messages.send',
+                                                      {'user_id': event.user_id,
+                                                       'message': f'Я начну {users[event.user_id]["ct"]}',
+                                                       'keyboard': cities_kb(), 'random_id': 0})
+                            elif users[event.user_id]["act"] == "goroda":
+                                if msg.lower() == 'прервать игру':
+                                    users[event.user_id]["ct_used"].clear()
+                                    users[event.user_id]["act"] = "games"
+                                    vk_session.method('messages.send',
+                                                      {'user_id': event.user_id, 'message': 'Ты перешел в меню игр',
+                                                       "keyboard": games_kb(), 'random_id': 0})
+                                else:
+                                    temp = []
+                                    city, k, k1 = msg, -1, -1
+                                    if users[event.user_id]['ct'][-1] in 'ъьы':
+                                        k = -2
+                                    if city.lower()[0] == users[event.user_id]["ct"][k] and city in data and city not in \
+                                            users[event.user_id]["ct_used"]:
+                                        users[event.user_id]["ct_used"].append(city)
+                                        if city[-1] in 'ъьы':
+                                            k1 = -2
+                                        for i in data:
+                                            if i.lower()[0] == city[k1]:
+                                                temp.append(i)
+                                        for j in temp:
+                                            if j in users[event.user_id]["ct_used"]:
+                                                del(temp[temp.index(j)])
+                                        if temp:
+                                            new_city = choice(temp)
+                                            users[event.user_id]["ct_used"].append(new_city)
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id, 'message': new_city,
+                                                               "keyboard": cities_kb(), 'random_id': 0})
+                                            users[event.user_id]["ct"] = new_city
+                                        else:
+                                            users[event.user_id]["act"] = 'games'
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id, 'message': "Ты выиграл",
+                                                               "keyboard": games_kb(), 'random_id': 0})
+                                    elif city in users[event.user_id]["ct_used"]:
                                         vk_session.method('messages.send',
-                                                          {'user_id': event.user_id, 'message': 'Ты перешел в меню игр',
-                                                           "keyboard": games_kb(), 'random_id': 0})
+                                                          {'user_id': event.user_id, 'message': "Город уже был назван",
+                                                           "keyboard": cities_kb(), 'random_id': 0})
                                     else:
-                                        isBreak = False
-                                        users[event.user_id]["act"] = "city"
-                                        last_city = choice(data)
                                         vk_session.method('messages.send',
-                                                          {'user_id': event.user_id,
-                                                           'message': f'Я начинаю: {last_city}',
-                                                           'keyboard': cities_kb(), 'random_id': 0})
-                                        while not isBreak:
-                                            city = msg.lower()
-                                            if city[0] == last_city[-1] and city in data:
-                                                for i in data:
-                                                    if i[0] == city[-1]:
-                                                        last_city = city
-                                                        vk_session.method('messages.send',
-                                                                          {'user_id': event.user_id,
-                                                                           'message': last_city,
-                                                                           'keyboard': cities_kb(), 'random_id': 0})
-                                            else:
-                                                vk_session.method('messages.send',
-                                                                  {'user_id': event.user_id,
-                                                                   'message':
-                                                                       "Город не соответствует условию. Введите другой",
-                                                                   'keyboard': cities_kb(), 'random_id': 0})
+                                                          {'user_id': event.user_id, 'message': 'Неправильное '
+                                                                                                'название города',
+                                                           "keyboard": cities_kb(), 'random_id': 0})
                     save = open('users.txt', mode='w', encoding='utf-8').write(str(users))
         except ReadTimeout:
             break
