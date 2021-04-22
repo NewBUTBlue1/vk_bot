@@ -25,14 +25,6 @@ def menu_kb():
                 "action": {
                     "type": "text",
                     "payload": "{\"button\": \"1\"}",
-                    "label": "Отправить e-mail"
-                },
-                "color": "secondary"
-            }, ],
-            [{
-                "action": {
-                    "type": "text",
-                    "payload": "{\"button\": \"1\"}",
                     "label": "Игры"
                 },
                 "color": "primary"

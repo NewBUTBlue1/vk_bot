@@ -1,4 +1,3 @@
-import smtplib
 import requests
 import wikipedia
 from data.keyboards.scr import *
@@ -7,7 +6,7 @@ from vk_api.longpoll import VkEventType, VkLongPoll
 from requests.exceptions import ReadTimeout
 from scripts.table import data
 from random import choice
-from scripts.parser import get_p
+from scripts.map_method import get_photo
 
 token = "b192ac9e1f0ae17eee1dd0b74264e17c6ffb4bbfd4a1a684ab428f6b5d7d11208281a1e5214169db1088e"
 vk_session = vk_api.VkApi(token=token)
@@ -74,20 +73,52 @@ while True:
                                                                                                     'запятой (пример '
                                                                                                     '65.000000)',
                                                                'keyboard': ins_map_kb(), 'random_id': 0})
-                                            try:
-                                                ll1 = str(msg).split()[0]
-                                                ll2 = str(msg).split()[1]
-                                                with open("img.png", "wb") as file:
-                                                    resp = requests.get(
-                                                        f"https://static-maps.yandex.ru/1.x/?ll={ll1},{ll2}&spn=0.016457,0.00619&l=map")
-                                                    file.write(resp.content)
-                                            except ValueError:
-                                                users[event.user_id]["act"] = "maps"
-                                                vk_session.method('messages.send',
-                                                                  {'user_id': event.user_id,
-                                                                   'message': 'Вы ввели не число. Попробуйте сначала.',
-                                                                   'keyboard': maps_kb(), 'random_id': 0})
-
+                                            users[event.user_id]["act"] = "maps_send"
+                            if users[event.user_id]["act"] == "maps_send":
+                                if msg.lower() != "назад":
+                                    if msg.lower() != "фрагмент карты по ее координатам":
+                                        try:
+                                            ll1 = str(msg).split()[0]
+                                            ll2 = str(msg).split()[1]
+                                            if 2 < len(ll1) < 9:
+                                                if 2 < len(ll2) < 9:
+                                                    ll2 += '0' * (9 - len(ll2))
+                                                elif len(ll2) <= 2:
+                                                    ll2 += '.000000'
+                                                ll1 += '0' * (9 - len(ll1))
+                                            elif len(ll1) <= 2:
+                                                if 2 < len(ll2) < 9:
+                                                    ll2 += '0' * (9 - len(ll2))
+                                                elif len(ll2) <= 2:
+                                                    ll2 += '.000000'
+                                                ll1 += '.000000'
+                                            get_photo(ll1, ll2)
+                                            a = vk_session.method("photos.getMessagesUploadServer")
+                                            b = requests.post(a['upload_url'],
+                                                              files={'photo': open('../data/img/image.png', 'rb')}).json()
+                                            c = vk_session.method('photos.saveMessagesPhoto',
+                                                          {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[
+                                                0]
+                                            d = "photo{}_{}".format(c["owner_id"], c["id"])
+                                            vk_session.method("messages.send",
+                                                      {"user_id": event.user_id, "message": "Вот твой фрагмент: ", "attachment": d,
+                                                       "random_id": 0})
+                                        except ValueError:
+                                            users[event.user_id]["act"] = "maps"
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id,
+                                                               'message': 'Вы ввели не число. Попробуйте сначала.',
+                                                               'keyboard': maps_kb(), 'random_id': 0})
+                                        except vk_api.exceptions.ApiError:
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id,
+                                                               'message': 'Внутренняя ошибка',
+                                                               'keyboard': maps_kb(), 'random_id': 0})
+                                else:
+                                    users[event.user_id]["act"] = "menu"
+                                    vk_session.method('messages.send',
+                                                      {'user_id': event.user_id, 'message': 'Функции бота: ',
+                                                       'keyboard': menu_kb(), 'random_id': 0})
                             if users[event.user_id]["act"] == "wiki":
                                 if msg.lower() == "назад":
                                     users[event.user_id]["act"] = "menu"
