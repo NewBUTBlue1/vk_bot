@@ -17,14 +17,6 @@ def menu_kb():
                 "action": {
                     "type": "text",
                     "payload": "{\"button\": \"1\"}",
-                    "label": "Поиск товаров"
-                },
-                "color": "secondary"
-            }, ],
-            [{
-                "action": {
-                    "type": "text",
-                    "payload": "{\"button\": \"1\"}",
                     "label": "Игры"
                 },
                 "color": "primary"
