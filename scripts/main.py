@@ -7,6 +7,7 @@ from requests.exceptions import ReadTimeout
 from scripts.table import data
 from random import choice
 from scripts.map_method import get_photo
+import fuzz
 
 token = "b192ac9e1f0ae17eee1dd0b74264e17c6ffb4bbfd4a1a684ab428f6b5d7d11208281a1e5214169db1088e"
 vk_session = vk_api.VkApi(token=token)
@@ -138,11 +139,22 @@ while True:
                                                                'message': f'{x.content[:300]}...',
                                                                'keyboard': wiki_msg(y), 'random_id': 0})
                                         except wikipedia.exceptions.DisambiguationError as e:
-                                            y = f'https://ru.wikipedia.org/wiki/{"_".join(msg.split())}'
+                                            sr = wikipedia.search(msg)
+                                            y = ""
+                                            if len(sr[0].split()) > 1:
+                                                y = f'https://ru.wikipedia.org/wiki/{"_".join(sr[0])}'
+                                            else:
+                                                y = f'https://ru.wikipedia.org/wiki/{sr[0]}'
+                                            print(y)
                                             vk_session.method('messages.send',
                                                               {'user_id': event.user_id,
                                                                'message': f'Мы нашли список значений. Он в ссылке',
                                                                'keyboard': wiki_msg(y), 'random_id': 0})
+                                        except wikipedia.exceptions.PageError:
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id,
+                                                               'message': f'Такой страницы мы не нашли.',
+                                                               'keyboard': menu_wiki(), 'random_id': 0})
                             if users[event.user_id]["act"] == "games":
                                 if msg.lower() == "назад":
                                     users[event.user_id]["act"] = "menu"
