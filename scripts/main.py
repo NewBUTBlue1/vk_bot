@@ -95,14 +95,17 @@ while True:
                                             get_photo(ll1, ll2)
                                             a = vk_session.method("photos.getMessagesUploadServer")
                                             b = requests.post(a['upload_url'],
-                                                              files={'photo': open('../data/img/image.png', 'rb')}).json()
+                                                              files={
+                                                                  'photo': open('../data/img/image.png', 'rb')}).json()
                                             c = vk_session.method('photos.saveMessagesPhoto',
-                                                          {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[
+                                                                  {'photo': b['photo'], 'server': b['server'],
+                                                                   'hash': b['hash']})[
                                                 0]
                                             d = "photo{}_{}".format(c["owner_id"], c["id"])
                                             vk_session.method("messages.send",
-                                                      {"user_id": event.user_id, "message": "Вот твой фрагмент: ", "attachment": d,
-                                                       "random_id": 0})
+                                                              {"user_id": event.user_id,
+                                                               "message": "Вот твой фрагмент: ", "attachment": d,
+                                                               "random_id": 0})
                                         except ValueError:
                                             users[event.user_id]["act"] = "maps"
                                             vk_session.method('messages.send',
@@ -165,8 +168,8 @@ while True:
                                     city, k, k1 = msg, -1, -1
                                     if users[event.user_id]['ct'][-1] in 'ъьы':
                                         k = -2
-                                    if city.lower()[0] == users[event.user_id]["ct"][k] and city in data and city not in \
-                                            users[event.user_id]["ct_used"]:
+                                    if city.lower()[0] == users[event.user_id]["ct"][k] and city in data and city \
+                                            not in users[event.user_id]["ct_used"]:
                                         users[event.user_id]["ct_used"].append(city)
                                         if city[-1] in 'ъьы':
                                             k1 = -2
@@ -175,7 +178,7 @@ while True:
                                                 temp.append(i)
                                         for j in temp:
                                             if j in users[event.user_id]["ct_used"]:
-                                                del(temp[temp.index(j)])
+                                                del (temp[temp.index(j)])
                                         if temp:
                                             new_city = choice(temp)
                                             users[event.user_id]["ct_used"].append(new_city)
