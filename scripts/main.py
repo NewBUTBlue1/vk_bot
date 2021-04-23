@@ -154,7 +154,7 @@ while True:
                                     users[event.user_id]["ct"] = choice(data)
                                     vk_session.method('messages.send',
                                                       {'user_id': event.user_id,
-                                                       'message': f'Я начну {users[event.user_id]["ct"]}',
+                                                       'message': f'Я начну - {users[event.user_id]["ct"]}. Пиши города с большой буквы.',
                                                        'keyboard': cities_kb(), 'random_id': 0})
                             elif users[event.user_id]["act"] == "goroda":
                                 if msg.lower() == 'прервать игру':
