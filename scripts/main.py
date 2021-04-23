@@ -178,40 +178,46 @@ while True:
                                 else:
                                     temp = []
                                     city, k, k1 = msg, -1, -1
-                                    if users[event.user_id]['ct'][-1] in 'ъьы':
-                                        k = -2
-                                    if city.lower()[0] == users[event.user_id]["ct"][k] and city in data and city \
-                                            not in users[event.user_id]["ct_used"]:
-                                        users[event.user_id]["ct_used"].append(city)
-                                        if city[-1] in 'ъьы':
-                                            k1 = -2
-                                        for i in data:
-                                            if i.lower()[0] == city[k1]:
-                                                temp.append(i)
-                                        for j in temp:
-                                            if j in users[event.user_id]["ct_used"]:
-                                                del (temp[temp.index(j)])
-                                        if temp:
-                                            new_city = choice(temp)
-                                            users[event.user_id]["ct_used"].append(new_city)
-                                            vk_session.method('messages.send',
-                                                              {'user_id': event.user_id, 'message': new_city,
-                                                               "keyboard": cities_kb(), 'random_id': 0})
-                                            users[event.user_id]["ct"] = new_city
-                                        else:
-                                            users[event.user_id]["act"] = 'games'
-                                            vk_session.method('messages.send',
-                                                              {'user_id': event.user_id, 'message': "Ты выиграл",
-                                                               "keyboard": games_kb(), 'random_id': 0})
-                                    elif city in users[event.user_id]["ct_used"]:
+                                    if msg.lower() == msg:
                                         vk_session.method('messages.send',
-                                                          {'user_id': event.user_id, 'message': "Город уже был назван",
+                                                          {'user_id': event.user_id, 'message': 'Пиши с большой '
+                                                                                                'буквы!',
                                                            "keyboard": cities_kb(), 'random_id': 0})
                                     else:
-                                        vk_session.method('messages.send',
-                                                          {'user_id': event.user_id, 'message': 'Неправильное '
-                                                                                                'название города',
-                                                           "keyboard": cities_kb(), 'random_id': 0})
+                                        if users[event.user_id]['ct'][-1] in 'ъьы':
+                                            k = -2
+                                        if city.lower()[0] == users[event.user_id]["ct"][k] and city in data and city \
+                                                not in users[event.user_id]["ct_used"]:
+                                            users[event.user_id]["ct_used"].append(city)
+                                            if city[-1] in 'ъьы':
+                                                k1 = -2
+                                            for i in data:
+                                                if i.lower()[0] == city[k1]:
+                                                    temp.append(i)
+                                            for j in temp:
+                                                if j in users[event.user_id]["ct_used"]:
+                                                    del (temp[temp.index(j)])
+                                            if temp:
+                                                new_city = choice(temp)
+                                                users[event.user_id]["ct_used"].append(new_city)
+                                                vk_session.method('messages.send',
+                                                                  {'user_id': event.user_id, 'message': new_city,
+                                                                   "keyboard": cities_kb(), 'random_id': 0})
+                                                users[event.user_id]["ct"] = new_city
+                                            else:
+                                                users[event.user_id]["act"] = 'games'
+                                                vk_session.method('messages.send',
+                                                                  {'user_id': event.user_id, 'message': "Ты выиграл",
+                                                                   "keyboard": games_kb(), 'random_id': 0})
+                                        elif city in users[event.user_id]["ct_used"]:
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id, 'message': "Город уже был назван",
+                                                               "keyboard": cities_kb(), 'random_id': 0})
+                                        else:
+                                            vk_session.method('messages.send',
+                                                              {'user_id': event.user_id, 'message': 'Неправильное '
+                                                                                                    'название города',
+                                                               "keyboard": cities_kb(), 'random_id': 0})
                     save = open('users.txt', mode='w', encoding='utf-8').write(str(users))
         except ReadTimeout:
             break
